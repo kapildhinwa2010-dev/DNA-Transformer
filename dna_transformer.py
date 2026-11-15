@@ -12,7 +12,10 @@ from __future__ import annotations
 
 import numpy as np
 
-__all__ = ["encode", "decode", "GeneRecord", "codec_stats"]
+__all__ = [
+    "encode", "decode", "GeneRecord", "codec_stats",
+    "encode_heads", "decode_heads", "heads_max_abs_error",
+]
 
 
 class GeneRecord:
@@ -80,3 +83,37 @@ def codec_stats(matrix: np.ndarray, bits: int = 8) -> dict:
         "max_abs_error": float(np.abs(matrix - decode(record)).max()),
         "bits": bits,
     }
+
+
+def encode_heads(matrix: np.ndarray, num_heads: int, bits: int = 8) -> list:
+    """Encode an attention/MLP-block weight matrix head-by-head.
+
+    Transformer weight matrices mix heads with different value ranges in one
+    tensor. Encoding each head block (equal row split) with its own scale
+    gives lower reconstruction error than one global scale.
+
+    Returns: List of GeneRecord, one per head.
+    """
+    matrix = np.asarray(matrix, dtype=np.float64)
+    if matrix.ndim != 2:
+        raise ValueError("matrix must be 2-D")
+    if num_heads < 1 or matrix.shape[0] % num_heads != 0:
+        raise ValueError("num_heads must divide the number of rows")
+    rows = matrix.shape[0] // num_heads
+    return [
+        encode(matrix[i * rows:(i + 1) * rows, :], bits=bits)
+        for i in range(num_heads)
+    ]
+
+
+def decode_heads(records: list) -> np.ndarray:
+    """Reconstruct a full matrix from per-head GeneRecords (see encode_heads)."""
+    if not records:
+        raise ValueError("records must be non-empty")
+    return np.vstack([decode(r) for r in records])
+
+
+def heads_max_abs_error(matrix: np.ndarray, num_heads: int, bits: int = 8) -> float:
+    """Max absolute error of the per-head round-trip for the matrix."""
+    records = encode_heads(matrix, num_heads, bits=bits)
+    return float(np.abs(matrix - decode_heads(records)).max())
