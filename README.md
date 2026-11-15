@@ -1,7 +1,8 @@
 # DNA-Transformer
 
 [![CI](https://github.com/kapildhinwa2010-dev/DNA-Transformer/actions/workflows/ci.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/DNA-Transformer/actions/workflows/ci.yml)
-[![CI](https://github.com/kapildhinwa2010-dev/DNA-Transformer/actions/workflows/codeql.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/DNA-Transformer/actions/workflows/codeql.yml)
+[![CodeQL](https://github.com/kapildhinwa2010-dev/DNA-Transformer/actions/workflows/codeql.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/DNA-Transformer/actions/workflows/codeql.yml)
+
 
 DNA quantized codec tuned for transformer weight matrices: per-head encoding.
 
